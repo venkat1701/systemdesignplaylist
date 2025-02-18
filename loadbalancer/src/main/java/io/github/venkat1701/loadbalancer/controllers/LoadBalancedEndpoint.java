@@ -26,7 +26,7 @@ public class LoadBalancedEndpoint {
     public String invoke(@RequestParam("v1") int v1, @RequestParam("v2") int v2) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://ciphercircuit-math-assistant.p.rapidapi.com/addition?numbers=-11.484216%2C%202%2C%2032%2C%20-45&decimalPlaces=5"))
-                .header("x-rapidapi-key", "661fa8cfa5msh760bf94e75b6c13p11c42ajsnef40e40940c3")
+                .header("x-rapidapi-key", "KEY")
                 .header("x-rapidapi-host", "ciphercircuit-math-assistant.p.rapidapi.com")
                 .header("Cache-Control", "no-cache")
                 .method("GET", HttpRequest.BodyPublishers.noBody())
