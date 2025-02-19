@@ -26,7 +26,6 @@ public class WebsiteVisitController {
     @GetMapping("/{pageNumber}")
     public ResponseEntity<WebsiteVisitDTO> getVisits(@PathVariable("pageNumber") String pageNumber) {
         int visits = this.websiteVisitService.getVisitCount(pageNumber);
-        System.out.println(visits);
         String source = this.websiteVisitService.getVisitCount(pageNumber) > 0 ? "Local Cache" : "Redis";
         return ResponseEntity.ok(new WebsiteVisitDTO(visits, source));
     }

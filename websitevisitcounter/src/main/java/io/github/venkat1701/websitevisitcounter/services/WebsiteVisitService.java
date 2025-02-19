@@ -39,15 +39,29 @@ public class WebsiteVisitService {
         return redisCount + localCount + bufferCount;
     }
 
+    @Scheduled(fixedRate = 5000)
+    public void flushToLocalCache() {
+        for(Map.Entry<String, AtomicInteger> entry : this.buffer.entrySet()) {
+            String key = entry.getKey();
+            int count = entry.getValue().get();
+            if(count > 0) {
+                this.localCache.put(key, new AtomicInteger(entry.getValue().get()+this.localCache.asMap().getOrDefault(key, new AtomicInteger(0)).get()));
+            }
+        }
+        this.buffer.clear();
+    }
+
+
     @Scheduled(fixedRate = 20000)
     public void flushToRedis() {
-        for (Map.Entry<String, AtomicInteger> entry : buffer.entrySet()) {
+        for (Map.Entry<String, AtomicInteger> entry : localCache.asMap().entrySet()) {
             String key = entry.getKey();
             int count = entry.getValue().get();
             if (count > 0) {
-                this.redisTemplate.opsForValue().increment(key, count);
+                redisTemplate.opsForValue().increment(key, count);
+                localCache.invalidate(key);
             }
         }
-        buffer.clear();
     }
+
 }
