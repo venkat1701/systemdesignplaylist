@@ -5,6 +5,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -12,6 +14,7 @@ public class WebsiteVisitService {
 
     private final Cache<String, AtomicInteger> localCache;
     private final RedisTemplate<String, Integer> redisTemplate;
+    private final Map<String, AtomicInteger> buffer = new ConcurrentHashMap<>();
 
     public WebsiteVisitService(Cache<String, AtomicInteger> localCache, RedisTemplate<String, Integer> redisTemplate) {
         this.localCache = localCache;
@@ -19,21 +22,28 @@ public class WebsiteVisitService {
     }
 
     public void incrementVisit(String pageNumber) {
-        this.localCache.asMap()
-                .computeIfAbsent(pageNumber, k -> new AtomicInteger(0))
+        this.buffer.computeIfAbsent(pageNumber, k -> new AtomicInteger(0))
                 .incrementAndGet();
+//        this.localCache.asMap()
+//                .computeIfAbsent(pageNumber, k -> new AtomicInteger(0))
+//                .incrementAndGet();
     }
 
 
     public int getVisitCount(String pagenumber) {
+        var bufferCount = this.buffer.getOrDefault(pagenumber, new AtomicInteger(0)).get();
+
         var localCount = this.localCache.getIfPresent(pagenumber);
         if (localCount != null) {
-            return localCount.get();
+            return localCount.get()+bufferCount;
         } else {
             Number redisValue = this.redisTemplate.opsForValue().get(pagenumber);
             if (redisValue != null) {
-                return new AtomicInteger(redisValue.intValue()).get();
+                int visitCount = redisValue.intValue()+bufferCount;
+                return visitCount+redisValue.intValue();
             }
+
+            this.localCache.put(pagenumber, new AtomicInteger(redisValue.intValue()+bufferCount));
             return 0;
         }
     }
@@ -46,13 +56,21 @@ public class WebsiteVisitService {
 
     @Scheduled(fixedRate = 5000)
     public void flushToRedis() {
-        for (String key : this.localCache.asMap().keySet()) {
-            var visits = this.localCache.getIfPresent(key);
-            if (visits != null) {
-                this.redisTemplate.opsForValue().increment(key, visits.get());
-                this.localCache.invalidate(key);
-            }
+
+        //flushing the buffer to redis
+        for(var entry : this.buffer.entrySet()) {
+            this.redisTemplate.opsForValue().increment(entry.getKey(), entry.getValue().intValue());
         }
+
+        this.buffer.clear();
+
+//        for (String key : this.localCache.asMap().keySet()) {
+//            var visits = this.localCache.getIfPresent(key);
+//            if (visits != null) {
+//                this.redisTemplate.opsForValue().increment(key, visits.get());
+//                this.localCache.invalidate(key);
+//            }
+//        }
     }
 
 }

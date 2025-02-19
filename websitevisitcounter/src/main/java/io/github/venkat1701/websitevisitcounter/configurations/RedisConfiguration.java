@@ -20,7 +20,7 @@ public class RedisConfiguration {
     @Bean
     public Cache<String, AtomicInteger> localCache() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .expireAfterWrite(5, TimeUnit.SECONDS)
                 .maximumSize(10000)
                 .build();
     }
