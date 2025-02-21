@@ -25,11 +25,13 @@ public class WebsiteVisitService {
                 .incrementAndGet();
     }
 
+
+
     public int getVisitCount(String pageNumber) {
         int redisCount = 0;
-        Number redisVal = this.redisTemplate.opsForValue().get(pageNumber);
+        Integer redisVal = this.redisTemplate.opsForValue().get(pageNumber);
         if (redisVal != null) {
-            redisCount = redisVal.intValue();
+            redisCount = redisVal;
         }
 
         var localAtomicValue = this.localCache.getIfPresent(pageNumber);
