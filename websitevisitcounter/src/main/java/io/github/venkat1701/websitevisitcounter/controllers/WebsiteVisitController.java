@@ -1,7 +1,6 @@
 package io.github.venkat1701.websitevisitcounter.controllers;
 
 import io.github.venkat1701.websitevisitcounter.dto.WebsiteVisitDTO;
-import io.github.venkat1701.websitevisitcounter.model.WebsiteCounter;
 import io.github.venkat1701.websitevisitcounter.services.WebsiteVisitService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,18 +15,15 @@ public class WebsiteVisitController {
         this.websiteVisitService = websiteVisitService;
     }
 
-
     @PostMapping("/{pageNumber}")
     public ResponseEntity<String> incrementVisit(@PathVariable("pageNumber") String pageNumber) {
-        this.websiteVisitService.incrementVisit(pageNumber);
+        websiteVisitService.incrementVisit(pageNumber);
         return ResponseEntity.ok("Successfully incremented visit");
     }
 
     @GetMapping("/{pageNumber}")
     public ResponseEntity<WebsiteVisitDTO> getVisits(@PathVariable("pageNumber") String pageNumber) {
-        int visits = this.websiteVisitService.getVisitCount(pageNumber);
-        String source = this.websiteVisitService.getVisitCount(pageNumber) > 0 ? "Local Cache" : "Redis";
-        return ResponseEntity.ok(new WebsiteVisitDTO(visits, source));
+        WebsiteVisitDTO dto = websiteVisitService.getVisitResult(pageNumber);
+        return ResponseEntity.ok(dto);
     }
-
 }
