@@ -1,0 +1,12 @@
+version: '3'
+services:
+  redis1:
+    container_name: redis1
+    image: redis:latest
+    ports:
+      - "7070:6379"
+  redis2:
+    container_name: redis2
+    image: redis:latest
+    ports:
+      - "7071:6379"
