@@ -1,4 +1,4 @@
-package io.github.venkat1701.netflixstreamingstudy.core;
+package io.github.venkat1701.netflixstreamingstudy.services;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
