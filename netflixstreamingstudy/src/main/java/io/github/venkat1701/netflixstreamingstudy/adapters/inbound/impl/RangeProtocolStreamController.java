@@ -25,6 +25,7 @@ public class RangeProtocolStreamController implements VideoStreamController {
     @GetMapping("/stream/videos")
     public ResponseEntity<StreamingResponseBody> streamVideo(
         @RequestHeader(value="Range", required = true) String rangeHeader) throws IOException {
+        // currently hardcoded for the resource name
         return this.videoStreamService.streamVideo("version1.mp4", rangeHeader);
     }
 
